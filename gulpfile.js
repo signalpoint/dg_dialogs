@@ -1,25 +1,36 @@
+var makeBinary = true;
+
 var gulp = require('gulp'),
     watch = require('gulp-watch'),
     gp_concat = require('gulp-concat'),
     gp_rename = require('gulp-rename'),
     gp_uglify = require('gulp-uglify');
 
-var dg_dialogsModuleSrc = [
+var jsSrc = [
   './src/_dg_dialogs.js',
   './src/includes/include.*.js'
 ];
 
-// Task to build the cw_app.min.js file.
-gulp.task('minifyJS', function(){
-  return gulp.src(dg_dialogsModuleSrc)
-      .pipe(gp_concat('concat.js'))
-      .pipe(gulp.dest(''))
-      .pipe(gp_rename('dg_dialogs.min.js'))
-      .pipe(gp_uglify())
-      .pipe(gulp.dest(''));
-});
+// Minify JavaScript
+function minifyJs() {
+  console.log('compressing dg_dialogs.js...');
+  var js = gulp.src(jsSrc)
+    .pipe(gp_concat('dg_dialogs.js'))
+    .pipe(gulp.dest('./'));
+  if (makeBinary) {
+    console.log('compressing dg_dialogs.min.js...');
+    return js.pipe(gp_rename('dg_dialogs.min.js'))
+    .pipe(gp_uglify())
+    .pipe(gulp.dest('./'));
+  }
+  return js;
+}
+gulp.task(minifyJs);
 
-gulp.task('default', function () {
-  watch(dg_dialogsModuleSrc, function(event) { gulp.start('minifyJS') });
-  gulp.start('minifyJS');
+gulp.task('default', function(done) {
+
+  gulp.watch(jsSrc, gulp.series('minifyJs'));
+
+  done();
+
 });
